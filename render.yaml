@@ -1,11 +1,55 @@
 services:
   - type: web
-    name: essai2-laravel
+    name: laravel-app
     env: php
-    plan: free
+    region: frankfurt  # ou singapore, oregon, ohio, ireland
+    plan: free  # ou starter, pro, etc.
     buildCommand: |
-      composer install --no-dev --optimize-autoloader
-      php artisan migrate --force
-      php artisan storage:link
+      chmod +x render-build.sh
+      ./render-build.sh
     startCommand: |
-      php artisan serve --host 0.0.0.0 --port $PORT
+      php artisan serve --host=0.0.0.0 --port=8080
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        fromService:
+          type: web
+          name: laravel-app
+          property: url
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: APP_KEY
+        generateValue: true
+      # Ajoutez vos variables de base de données ici
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        fromDatabase:
+          name: laravel-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: laravel-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: laravel-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: laravel-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: laravel-db
+          property: password
+
+databases:
+  - name: laravel-db
+    region: frankfurt
+    plan: free  # ou starter, pro, etc.
+    databaseName: laravel_db
+    user: laravel_user
