@@ -1,58 +1,41 @@
-services:
-  - type: web
-    name: laravel-app
-    env: docker
-    region: frankfurt
-    plan: free
-    autoDeploy: true
-    envVars:
-      - key: APP_ENV
-        value: production
-      - key: APP_DEBUG
-        value: false
-      - key: APP_URL
-        fromService:
-          type: web
-          name: laravel-app
-          property: url
-      - key: APP_KEY
-        generateValue: true
+envVars:
+  - key: APP_ENV
+    value: production
+  - key: APP_DEBUG
+    value: false
+  - key: APP_URL
+    value: "https://essai2-laravel-4.onrender.com"
+  - key: APP_KEY
+    generateValue: true
 
-      - key: CACHE_STORE
-        value: file
-      - key: SESSION_DRIVER
-        value: file
-      - key: QUEUE_CONNECTION
-        value: sync
+  - key: CACHE_STORE
+    value: file
+  - key: SESSION_DRIVER
+    value: file
+  - key: QUEUE_CONNECTION
+    value: sync
 
-      - key: DB_CONNECTION
-        value: pgsql
-      - key: DB_HOST
-        fromDatabase:
-          name: laravel-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: laravel-db
-          property: port
-      - key: DB_DATABASE
-        fromDatabase:
-          name: laravel-db
-          property: database
-      - key: DB_USERNAME
-        fromDatabase:
-          name: laravel-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: laravel-db
-          property: password
-      - key: DB_SSLMODE
-        value: require
-
-databases:
-  - name: laravel-db
-    region: frankfurt
-    plan: free
-    databaseName: laravel_db
-    user: laravel_user
+  - key: DB_CONNECTION
+    value: pgsql
+  - key: DB_HOST
+    fromDatabase:
+      name: laravel-db
+      property: host
+  - key: DB_PORT
+    fromDatabase:
+      name: laravel-db
+      property: port
+  - key: DB_DATABASE
+    fromDatabase:
+      name: laravel-db
+      property: database
+  - key: DB_USERNAME
+    fromDatabase:
+      name: laravel-db
+      property: user
+  - key: DB_PASSWORD
+    fromDatabase:
+      name: laravel-db
+      property: password
+  - key: DB_SSLMODE
+    value: require
