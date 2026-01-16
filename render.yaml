@@ -1,14 +1,10 @@
 services:
   - type: web
     name: laravel-app
-    env: php
-    region: frankfurt  # ou singapore, oregon, ohio, ireland
-    plan: free  # ou starter, pro, etc.
-    buildCommand: |
-      chmod +x render-build.sh
-      ./render-build.sh
-    startCommand: |
-      php artisan serve --host=0.0.0.0 --port=8080
+    env: docker
+    region: frankfurt
+    plan: free
+    autoDeploy: true
     envVars:
       - key: APP_ENV
         value: production
@@ -19,13 +15,18 @@ services:
           type: web
           name: laravel-app
           property: url
-      - key: LOG_CHANNEL
-        value: stderr
       - key: APP_KEY
         generateValue: true
-      # Ajoutez vos variables de base de données ici
+
+      - key: CACHE_STORE
+        value: file
+      - key: SESSION_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+
       - key: DB_CONNECTION
-        value: mysql
+        value: pgsql
       - key: DB_HOST
         fromDatabase:
           name: laravel-db
@@ -46,10 +47,12 @@ services:
         fromDatabase:
           name: laravel-db
           property: password
+      - key: DB_SSLMODE
+        value: require
 
 databases:
   - name: laravel-db
     region: frankfurt
-    plan: free  # ou starter, pro, etc.
+    plan: free
     databaseName: laravel_db
     user: laravel_user
