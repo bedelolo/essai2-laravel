@@ -41,6 +41,9 @@
                                         Statut
                                     </th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        Commentaire Admin
+                                    </th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
@@ -52,8 +55,12 @@
                                             <span class="capitalize">{{ $demande->type }}</span>
                                         </td>
                                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                            Du {{ \Carbon\Carbon::parse($demande->date_debut)->format('d/m/Y') }}
-                                            au {{ \Carbon\Carbon::parse($demande->date_fin)->format('d/m/Y') }}
+                                            @if($demande->date_debut && $demande->date_fin)
+                                                Du {{ \Carbon\Carbon::parse($demande->date_debut)->format('d/m/Y') }}
+                                                au {{ \Carbon\Carbon::parse($demande->date_fin)->format('d/m/Y') }}
+                                            @else
+                                                <span class="text-gray-400 italic">Non défini</span>
+                                            @endif
                                         </td>
                                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                             {{ Str::limit($demande->motif, 50) }}
@@ -71,15 +78,32 @@
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                                     Rejeté
                                                 </span>
-                                                @if($demande->commentaire_admin)
-                                                    <p class="text-xs text-red-600 mt-1">{{ $demande->commentaire_admin }}</p>
-                                                @endif
+                                            @elseif($demande->statut === 'brouillon')
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                    Brouillon
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm w-1/4">
+                                            @if($demande->commentaire_admin)
+                                                <p class="text-xs text-gray-600 italic">"{{ $demande->commentaire_admin }}"</p>
+                                            @else
+                                                <span class="text-gray-400 text-xs">-</span>
                                             @endif
                                         </td>
                                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                             @if($demande->statut === 'en_attente')
                                                 <div class="flex space-x-2">
                                                     <a href="{{ route('demandes.edit', $demande) }}" class="text-blue-600 hover:text-blue-900">Modifier</a>
+                                                    <form action="{{ route('demandes.destroy', $demande) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-600 hover:text-red-900">Supprimer</button>
+                                                    </form>
+                                                </div>
+                                            @elseif($demande->statut === 'brouillon')
+                                                <div class="flex space-x-2">
+                                                    <a href="{{ route('demandes.create') }}" class="text-indigo-600 hover:text-indigo-900 font-semibold">Reprendre</a>
                                                     <form action="{{ route('demandes.destroy', $demande) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr ?');">
                                                         @csrf
                                                         @method('DELETE')

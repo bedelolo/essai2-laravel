@@ -17,6 +17,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Routes pour les demandes (Utilisateur)
+    Route::post('/demandes/autosave', [\App\Http\Controllers\DemandeController::class, 'autosave'])->name('demandes.autosave');
     Route::get('/demandes/export-pdf', [\App\Http\Controllers\DemandeController::class, 'exportPdf'])->name('demandes.export');
     Route::resource('demandes', \App\Http\Controllers\DemandeController::class);
 

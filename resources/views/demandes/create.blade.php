@@ -9,15 +9,17 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <form action="{{ route('demandes.store') }}" method="POST">
+                    <div id="autosave-status" class="text-sm text-gray-500 mb-4 text-right h-5"></div>
+
+                    <form action="{{ route('demandes.store') }}" method="POST" id="demande-form">
                         @csrf
                         
                         <div class="mb-4">
                             <label for="type" class="block text-sm font-medium text-gray-700">Type de demande</label>
                             <select name="type" id="type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                                 <option value="">Choisir un type</option>
-                                <option value="conge">Congé</option>
-                                <option value="permission">Permission</option>
+                                <option value="conge" {{ (old('type') ?? ($demande->type ?? '')) == 'conge' ? 'selected' : '' }}>Congé</option>
+                                <option value="permission" {{ (old('type') ?? ($demande->type ?? '')) == 'permission' ? 'selected' : '' }}>Permission</option>
                             </select>
                             @error('type')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -27,14 +29,14 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label for="date_debut" class="block text-sm font-medium text-gray-700">Date de début</label>
-                                <input type="date" name="date_debut" id="date_debut" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                                <input type="date" name="date_debut" id="date_debut" value="{{ old('date_debut') ?? ($demande->date_debut ?? '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                                 @error('date_debut')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
                                 <label for="date_fin" class="block text-sm font-medium text-gray-700">Date de fin</label>
-                                <input type="date" name="date_fin" id="date_fin" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                                <input type="date" name="date_fin" id="date_fin" value="{{ old('date_fin') ?? ($demande->date_fin ?? '') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                                 @error('date_fin')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
@@ -43,7 +45,7 @@
 
                         <div class="mb-4">
                             <label for="motif" class="block text-sm font-medium text-gray-700">Motif</label>
-                            <textarea name="motif" id="motif" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required></textarea>
+                            <textarea name="motif" id="motif" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>{{ old('motif') ?? ($demande->motif ?? '') }}</textarea>
                             @error('motif')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
@@ -62,4 +64,54 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('demande-form');
+            const statusDiv = document.getElementById('autosave-status');
+            let timeoutId;
+
+            const inputs = form.querySelectorAll('input, select, textarea');
+
+            function autosave() {
+                const formData = new FormData(form);
+                statusDiv.innerText = 'Enregistrement du brouillon...';
+                
+                fetch("{{ route('demandes.autosave') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const now = new Date();
+                        statusDiv.innerText = 'Brouillon enregistré à ' + now.toLocaleTimeString();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    statusDiv.innerText = 'Erreur lors de l\'enregistrement';
+                });
+            }
+
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(autosave, 1000); // Wait 1s after last typing
+                });
+                
+                // For select and date inputs, we might want faster save on change
+                if (input.tagName === 'SELECT' || input.type === 'date') {
+                     input.addEventListener('change', function() {
+                        clearTimeout(timeoutId);
+                        autosave();
+                    });
+                }
+            });
+        });
+    </script>
 </x-app-layout>

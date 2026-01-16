@@ -51,6 +51,9 @@
                                             Statut
                                         </th>
                                         <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            Commentaire
+                                        </th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                             Date Traitement
                                         </th>
                                     </tr>
@@ -87,9 +90,12 @@
                                                     Rejeté
                                                 </span>
                                             @endif
-                                            
+                                        </td>
+                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm w-1/4">
                                             @if($demande->commentaire_admin)
-                                                <p class="text-xs text-gray-600 mt-1 italic">"{{ $demande->commentaire_admin }}"</p>
+                                                <p class="text-xs text-gray-600 italic">"{{ $demande->commentaire_admin }}"</p>
+                                            @else
+                                                <span class="text-gray-400 text-xs">-</span>
                                             @endif
                                         </td>
                                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">

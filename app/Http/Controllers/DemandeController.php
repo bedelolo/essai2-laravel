@@ -25,7 +25,10 @@ class DemandeController extends Controller
 
     public function create()
     {
-        return view('demandes.create');
+        $demande = Demande::where('user_id', Auth::id())
+                          ->where('statut', 'brouillon')
+                          ->first();
+        return view('demandes.create', compact('demande'));
     }
 
     public function store(Request $request)
@@ -37,13 +40,44 @@ class DemandeController extends Controller
             'motif' => 'required|string|max:500'
         ]);
 
-        $validated['user_id'] = Auth::id();
-        $validated['statut'] = 'en_attente';
+        $demande = Demande::where('user_id', Auth::id())
+                          ->where('statut', 'brouillon')
+                          ->first();
 
-        Demande::create($validated);
+        if ($demande) {
+            $demande->update(array_merge($validated, ['statut' => 'en_attente']));
+        } else {
+            $validated['user_id'] = Auth::id();
+            $validated['statut'] = 'en_attente';
+            Demande::create($validated);
+        }
 
         return redirect()->route('demandes.index')
             ->with('success', 'Demande envoyée avec succès!');
+    }
+
+    public function autosave(Request $request)
+    {
+        $validated = $request->validate([
+            'type' => 'nullable|in:conge,permission',
+            'date_debut' => 'nullable|date',
+            'date_fin' => 'nullable|date|after_or_equal:date_debut',
+            'motif' => 'nullable|string|max:500'
+        ]);
+
+        $demande = Demande::where('user_id', Auth::id())
+                          ->where('statut', 'brouillon')
+                          ->first();
+
+        if ($demande) {
+            $demande->update($validated);
+        } else {
+            $validated['user_id'] = Auth::id();
+            $validated['statut'] = 'brouillon';
+            $demande = Demande::create($validated);
+        }
+
+        return response()->json(['success' => true, 'demande_id' => $demande->id]);
     }
 
     public function edit(Demande $demande)
